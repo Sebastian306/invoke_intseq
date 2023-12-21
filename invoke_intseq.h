@@ -7,26 +7,26 @@
 
 
 
-// Początek funkcji zwracającej ilość wszystkich wyników
+// Beginning of the function returning the number of all results
 template <typename... Args>
 struct returns_counter{
     static constexpr std::size_t size = 1;
 };
 
-// funkcja zwracającea ilość wszystkich wyników dla intiger_sequence
+// Function returning the count of all results for intiger_sequence
 template <typename T, T... values, typename... Args>
 struct returns_counter<std::integer_sequence<T, values...>, Args...> {
     static constexpr std::size_t size = 
         sizeof...(values) * returns_counter<std::remove_cvref_t<Args>...>::size;
 };
 
-// funkcja zwracającea ilość wszystkich wyników dla zwykłego parametru
+// Function returning the count of all results for a regular argument
 template <typename T, typename... Args>
 struct returns_counter<T, Args...> {
     static constexpr std::size_t size = returns_counter<std::remove_cvref_t<Args>...>::size;
 };
 
-// Baza rekurencji generowania przypadków
+// Basis for recursive case generation
 template <bool ret_is_void, bool ret_is_ref, typename RetT, size_t N,
     typename Function, typename... PrevT>
 constexpr void _invoke_intseq(std::array<RetT, N>& res, std::size_t& index,
@@ -47,7 +47,7 @@ constexpr void _invoke_intseq(std::array<RetT, N>& res, std::size_t& index,
     }
 }
 
-// Rekurencja generowania przypadków dla standardowego parametru
+// Recursive case generation for standard parameter
 template <bool ret_is_void, bool ret_is_ref, typename RetT, size_t N, 
     typename Function, typename... PrevT, typename CurrT, typename... NextT>
 constexpr void _invoke_intseq(std::array<RetT, N>& res, std::size_t& index,
@@ -65,7 +65,7 @@ constexpr void _invoke_intseq(std::array<RetT, N>& res, std::size_t& index,
     );
 }
 
-// Rekurencja generowania przypadków dla ineger_sequence
+// Recursive case generation for ineger_sequence
 template <bool ret_is_void, bool ret_is_ref, typename RetT, size_t N, 
     typename Function, typename... PrevT, typename IS_T, IS_T... t, typename... NextT>
 constexpr void _invoke_intseq(std::array<RetT, N>& res, std::size_t& index, Function&& f, 
@@ -86,7 +86,7 @@ constexpr void _invoke_intseq(std::array<RetT, N>& res, std::size_t& index, Func
 }
 
 
-// Zwraca odpowiednia tabele wynikow dla podanych danych
+// Returns the appropriate result table for the given data
 template <typename T, std::size_t Size>
 constexpr auto array_creator(){
     constexpr bool ret_is_void = std::is_same_v<T, void>; 
@@ -100,7 +100,7 @@ constexpr auto array_creator(){
     }
 };
 
-// Zamiana std::array<std::optional<T>,S> na std::array<T,S>
+// Convert std::array<std::optional<T>,S> to std::array<T,S>
 template <typename T, std::size_t N>
 constexpr auto optional_array_to_regular_array(const std::array<T, N>& arr) {
     return std::apply([](const auto&... args) {
@@ -108,22 +108,23 @@ constexpr auto optional_array_to_regular_array(const std::array<T, N>& arr) {
     }, arr);
 }
 
-// Zamienia integer_sequence na integer
+// Converts integer_sequence to integer
 template <class... Args>
 struct remove_integer_sequence;
 
-// T_O - oryginalny typ
+// T_O - original type
 template <typename T_O, typename T, T... values>
 struct remove_integer_sequence<T_O, std::integer_sequence<T, values...>> {
     using type = std::integral_constant<T,0>;
 };
 
+// T_O - original type
 template <typename T_O, typename T>
 struct remove_integer_sequence<T_O, T> {
     using type = T_O;
 };
 
-// Funkcja sprawdzająca czy dany parametr to integer_sequence
+// Function that checks whether a given parameter is integer_sequence
 template <typename T>
 struct is_integer_sequence : std::false_type {};
 
@@ -131,7 +132,7 @@ template <typename T, T... Values>
 struct is_integer_sequence<std::integer_sequence<T, Values...>> : std::true_type {};
 
 
-// Funkcja sprawdzająca czy dany parametr to pusty integer_sequence
+// Function that checks whether a given parameter is an empty integer_sequence
 template <typename T>
 struct is_empty_integer_sequence : std::false_type {};
 
@@ -139,7 +140,7 @@ template <typename T>
 struct is_empty_integer_sequence<std::integer_sequence<T>> : std::true_type {};
 
 
-// Główna funkcja.
+// Main function
 template <class Function, class... Args>
 constexpr decltype(auto) invoke_intseq(Function&& f, Args&& ... args){
     using ret_type = std::invoke_result_t<
